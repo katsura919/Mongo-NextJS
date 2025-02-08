@@ -3,11 +3,10 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
 
 export default function NavBar() {
   const { user, logout } = useAuth();
-  const router = useRouter();
+  
 
 
   return (
