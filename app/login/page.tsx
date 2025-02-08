@@ -26,7 +26,7 @@ const LoginPage = () => {
         
         {/* Register Button */}
         <p className="text-sm text-center mt-4">
-          Don't have an account? 
+          Don&apos;t have an account?
           <Button 
             variant="link" 
             className="ml-1 text-blue-500"

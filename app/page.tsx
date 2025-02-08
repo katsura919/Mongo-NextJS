@@ -7,7 +7,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 export default function HomePage() {
   return (
     <div className="relative w-full min-h-screen flex flex-col items-center text-center bg-[#121212]">
-      {/* Background Cover Image - Darkened Further */}
+  
       <div className="relative w-full h-[70vh]">
         <Image
           src="/images/cover.jpg"
@@ -18,12 +18,12 @@ export default function HomePage() {
         />
       </div>
 
-      {/* Hero + Download Section Positioned Over the Image */}
+
       <div className="absolute top-[20vh] flex flex-col items-center text-white w-full px-6">
         <h1 className="text-5xl font-extrabold drop-shadow-md">Yomikata</h1>
         <p className="text-lg text-gray-300 mt-3">Discover and Read Manga!</p>
 
-        {/* Download Section */}
+     
         <div className="mt-10">
           <h2 className="text-3xl font-semibold text-gray-200">Download the App</h2>
           <p className="text-gray-400 mt-2">Available for iOS and Android</p>
