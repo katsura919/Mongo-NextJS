@@ -3,17 +3,26 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { registerUser, loginUser } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
+interface UserType {
+  _id: string; // Change 'id' to '_id'
+  username: string;
+  email: string;
+  role: string;
+  profilePicture: string;
+}
+
+
 interface AuthContextType {
-  user: { email: string; role: string } | null;
+  user: UserType | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, role: string) => Promise<void>;
+  register: (username: string, email: string, password: string, role: string) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,18 +35,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     try {
       const { data } = await loginUser(email, password);
-      const userData = { email, role: data.role };
+      console.log('Login Response:', data);
+  
+      const userData: UserType = {
+        _id: data.user.id,
+        username: data.user.username,
+        email: data.user.email,
+        role: data.user.role,
+        profilePicture: data.user.profilePicture || '', // Default to empty if not set
+      };
+
       localStorage.setItem('user', JSON.stringify(userData));
       setUser(userData);
-      router.push(data.role === 'admin' ? '/admin' : '/dashboard');
+  
+      // Redirect based on role
+      router.push(userData.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       console.error('Login failed:', err);
     }
   };
 
-  const register = async (email: string, password: string, role: string) => {
+  const register = async (username: string, email: string, password: string, role: string) => {
     try {
-      await registerUser(email, password, role);
+      await registerUser(username, email, password, role);
       await login(email, password);
     } catch (err) {
       console.error('Registration failed:', err);
