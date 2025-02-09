@@ -1,4 +1,5 @@
 "use client";
+import { useCallback } from "react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -6,7 +7,7 @@ import { Loader2, LogOut, Send, Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { fetchConversations, createConversation, fetchMessages, sendMessage } from "@/lib/api"; // Import API functions
+import { fetchConversations, createConversation, fetchMessages, sendMessage } from "@/lib/api";
 import io from "socket.io-client";
 
 const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000");
@@ -31,17 +32,8 @@ const Dashboard = () => {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  console.log(selectedConversation)
-  useEffect(() => {
-    if (!user) {
-      router.push("/login");
-    } else {
-      loadConversations();
-    }
-  }, [user, router]);
-
-  // Load user conversations
-  const loadConversations = async () => {
+ 
+  const loadConversations = useCallback(async () => {
     if (!user?._id) return;
     try {
       const response = await fetchConversations(user._id);
@@ -49,7 +41,15 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error fetching conversations:", error);
     }
-  };
+  }, [user]); // Depend on 'user'
+  
+  useEffect(() => {
+    if (!user) {
+      router.push("/login");
+    } else {
+      loadConversations();
+    }
+  }, [user, router, loadConversations]); // Now 'loadConversations' is included
 
   // Fetch messages for selected conversation
   const loadMessages = async (conversation: Conversation) => {
@@ -71,7 +71,7 @@ const Dashboard = () => {
   // Handle selecting a conversation
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
-    loadMessages(conversation); // ✅ Pass the full conversation object
+    loadMessages(conversation); 
   };
   
 

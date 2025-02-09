@@ -21,8 +21,12 @@ export const createConversation = async (senderUsername: string, receiverUsernam
   try {
     const response = await axios.post(`${DEPLOYED_BASE_URL}/conversations`, { senderUsername, receiverUsername });
     return response.data;
-  } catch (error: any) {
-    console.error("Error creating conversation:", error.response?.data || error.message);
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("Error creating conversation:", error.response?.data || error.message);
+    } else {
+      console.error("An unexpected error occurred:", error);
+    }
     return null;
   }
 };

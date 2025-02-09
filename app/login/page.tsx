@@ -26,6 +26,7 @@ const LoginPage = () => {
       await login(email, password);
       router.push('/dashboard');
     } catch (err) {
+      console.error("Login error:", err); // Logs the error
       setError('Invalid email or password');
     } finally {
       setLoading(false);
