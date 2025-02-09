@@ -78,12 +78,21 @@ const Dashboard = () => {
   // WebSocket listener for new messages
   useEffect(() => {
     socket.on("receiveMessage", (message: Message) => {
+      // Ensure the message has the correct structure
+      const formattedMessage: Message = {
+        _id: message._id,
+        sender: message.sender,
+        content: message.content || message.content, // Ensure content exists
+        timestamp: message.timestamp,
+        conversationId: message.conversationId,
+      };
+  
       setMessages((prevMessages) => {
         // Prevent duplicate messages
-        if (prevMessages.some((msg) => msg._id === message._id)) {
+        if (prevMessages.some((msg) => msg._id === formattedMessage._id)) {
           return prevMessages;
         }
-        return [...prevMessages, message];
+        return [...prevMessages, formattedMessage];
       });
     });
   
@@ -91,6 +100,7 @@ const Dashboard = () => {
       socket.off("receiveMessage");
     };
   }, [selectedConversation]);
+  
   
   // Send a message
   const handleSendMessage = async () => {
@@ -105,22 +115,32 @@ const Dashboard = () => {
       return;
     }
   
-    const messageData = {
+    // Temporary message structure for optimistic UI update
+    const tempMessage: Message = {
+      _id: new Date().getTime().toString(), // Temporary ID
+      sender: user.email,
+      content: newMessage, // Ensure the field is 'content', not 'text'
+      timestamp: new Date().toISOString(),
       conversationId: selectedConversation._id,
-      senderEmail: user.email,
-      receiverEmail,
-      text: newMessage,
     };
   
-    try {
-      await sendMessage(messageData.senderEmail, messageData.receiverEmail, messageData.text);
+    // Optimistically update UI
+    setMessages((prevMessages) => [...prevMessages, tempMessage]);
   
+    try {
+      // Send message to backend
+      await sendMessage(user.email, receiverEmail, newMessage);
       loadMessages(selectedConversation);
+      // Emit the message through WebSocket
+      socket.emit("sendMessage", tempMessage);
+  
+      // Clear input field
       setNewMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
+  
   
   
   
