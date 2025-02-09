@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const DEPLOYED_BASE_URL = 'https://mongo-backend-4prm.onrender.com/api';
+const DEPLOYED_BASE_URL = 'http://localhost:5000/api';
 
 // User Authentication APIs
 export const registerUser = async (username: string, email: string, password: string, role: string) => {
