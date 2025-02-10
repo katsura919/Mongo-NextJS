@@ -1,6 +1,5 @@
 "use client";
-import { useCallback } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Loader2, LogOut, Send, Search, Plus } from "lucide-react";
@@ -14,7 +13,7 @@ const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || `http://localhost:5000`)
 
 interface Conversation {
   _id: string;
-  participants: { _id: string; email: string}[];
+  participants: { _id: string; email: string }[];
 }
 
 interface Message {
@@ -32,7 +31,7 @@ const Dashboard = () => {
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
- 
+
   const loadConversations = useCallback(async () => {
     if (!user?._id) return;
     try {
@@ -42,7 +41,7 @@ const Dashboard = () => {
       console.error("Error fetching conversations:", error);
     }
   }, [user]); // Depend on 'user'
-  
+
   useEffect(() => {
     if (!user) {
       router.push("/login");
@@ -54,10 +53,10 @@ const Dashboard = () => {
   // Fetch messages for selected conversation
   const loadMessages = async (conversation: Conversation) => {
     if (!user) return;
-  
+
     const receiver = conversation.participants.find((p) => p._id !== user._id);
     if (!receiver) return;
-  
+
     try {
       const response = await fetchMessages(user._id, receiver._id); // Pass both user IDs
       setMessages(response.data);
@@ -66,14 +65,12 @@ const Dashboard = () => {
       console.error("Error fetching messages:", error);
     }
   };
-  
 
   // Handle selecting a conversation
   const handleSelectConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation);
-    loadMessages(conversation); 
+    loadMessages(conversation);
   };
-  
 
   // WebSocket listener for new messages
   useEffect(() => {
@@ -86,7 +83,7 @@ const Dashboard = () => {
         timestamp: message.timestamp,
         conversationId: message.conversationId,
       };
-  
+
       setMessages((prevMessages) => {
         // Prevent duplicate messages
         if (prevMessages.some((msg) => msg._id === formattedMessage._id)) {
@@ -95,26 +92,25 @@ const Dashboard = () => {
         return [...prevMessages, formattedMessage];
       });
     });
-  
+
     return () => {
       socket.off("receiveMessage");
     };
-  }, [selectedConversation]);
-  
-  
+  }, []); // Empty dependency array ensures this effect runs only once on mount
+
   // Send a message
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation || !user?.email) return;
-  
+
     const receiverEmail = selectedConversation.participants.find(
       (p) => p.email !== user.email
     )?.email;
-  
+
     if (!receiverEmail) {
       console.error("Receiver email is undefined.");
       return;
     }
-  
+
     // Temporary message structure for optimistic UI update
     const tempMessage: Message = {
       _id: new Date().getTime().toString(), // Temporary ID
@@ -123,29 +119,23 @@ const Dashboard = () => {
       timestamp: new Date().toISOString(),
       conversationId: selectedConversation._id,
     };
-  
+
     // Optimistically update UI
     setMessages((prevMessages) => [...prevMessages, tempMessage]);
-  
+
     try {
       // Send message to backend
       await sendMessage(user.email, receiverEmail, newMessage);
       loadMessages(selectedConversation);
       // Emit the message through WebSocket
       socket.emit("sendMessage", tempMessage);
-  
+
       // Clear input field
       setNewMessage("");
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
-  
-  
-  
-  
-
-  
 
   // Create a new conversation
   const handleNewConversation = async () => {
