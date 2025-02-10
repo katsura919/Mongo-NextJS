@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card";
 import { fetchConversations, createConversation, fetchMessages, sendMessage } from "@/lib/api";
 import io from "socket.io-client";
 
-const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || `https://mongo-backend-4prm.onrender.com`);
+const socket = io(`https://mongo-backend-4prm.onrender.com`);
 
 interface Conversation {
   _id: string;
